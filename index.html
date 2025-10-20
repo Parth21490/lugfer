@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lugfer: Peer-to-Peer Shipping</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
+        }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Google Places Autocomplete Styles */
+        .pac-container {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            z-index: 1000 !important;
+        }
+        .pac-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            border-top: 1px solid #f1f5f9;
+        }
+        .pac-item:first-child {
+            border-top: none;
+        }
+        .pac-item:hover {
+            background-color: #f8fafc;
+        }
+        .pac-item-query {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="antialiased text-slate-800">
+
+    <!-- App Container -->
+    <div id="app" class="min-h-screen">
+
+        <!-- Header / Navbar -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <a href="#" id="logo-link" class="font-bold text-2xl text-slate-800">
+                            <i class="fas fa-suitcase-rolling mr-2 text-blue-600"></i>Lugfer
+                        </a>
+                    </div>
+                    <div id="nav-links" class="hidden md:block">
+                        <!-- Links will be dynamically inserted here -->
+                    </div>
+                    <div class="md:hidden">
+                        <button id="mobile-menu-button" class="text-slate-500 hover:text-slate-700 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            <div id="mobile-menu" class="md:hidden hidden">
+                 <!-- Mobile links will be dynamically inserted here -->
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+            <!-- Authentication View -->
+            <div id="auth-view" class="view">
+                <div class="max-w-lg mx-auto bg-white p-8 rounded-xl shadow-lg text-center mt-12">
+                    <i class="fas fa-shield-alt text-5xl text-blue-500 mb-4"></i>
+                    <h2 class="text-3xl font-bold mb-2">Welcome to Lugfer</h2>
+                    <p class="text-slate-500 mb-6">Connect with travelers to ship your items faster and cheaper. Please sign in to continue.</p>
+                    <div id="auth-container" class="space-y-4">
+                        <!-- Auth UI will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold">Dashboard</h1>
+                     <div class="text-right">
+                        <p class="text-sm text-slate-500">Your User ID:</p>
+                        <p id="user-id-display-dashboard" class="font-mono text-sm bg-slate-100 px-2 py-1 rounded"></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Sender Panel -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-4">For Senders</h2>
+                        <p class="text-slate-500 mb-6">Have something to send? Post a request and find a traveler heading to your destination.</p>
+                        <button id="show-create-shipment-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
+                            <i class="fas fa-plus-circle mr-2"></i>Create New Shipment
+                        </button>
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-2">My Shipments</h3>
+                            <div id="my-shipments-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                                <!-- My shipments will be dynamically inserted -->
+                                <p class="text-slate-500">You have no active shipments.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Traveler Panel -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-4">For Travelers</h2>
+                        <p class="text-slate-500 mb-4">Enter your travel route to find shipments you can carry.</p>
+                        <div class="space-y-4 mb-4">
+                            <div>
+                                <label for="traveler-origin" class="block font-medium text-slate-700 mb-1">I'm traveling from...</label>
+                                <input type="text" id="traveler-origin" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="e.g., London, UK">
+                            </div>
+                            <div>
+                                <label for="traveler-destination" class="block font-medium text-slate-700 mb-1">...to...</label>
+                                <input type="text" id="traveler-destination" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="e.g., Mumbai, India">
+                            </div>
+                        </div>
+                        <button id="find-matching-shipments-btn" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300">
+                            <i class="fas fa-search mr-2"></i>Find Matching Shipments
+                        </button>
+                        <p id="traveler-error" class="text-red-600 text-sm mt-2 h-4 text-center"></p>
+                         <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-2">My Deliveries</h3>
+                            <div id="my-deliveries-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                                <!-- My deliveries will be dynamically inserted -->
+                                <p class="text-slate-500">You are not carrying any shipments.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Shipment View -->
+            <div id="create-shipment-view" class="view">
+                <div class="max-w-2xl mx-auto">
+                    <button class="back-to-dashboard text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
+                    <div class="bg-white p-8 rounded-xl shadow-lg">
+                        <h2 class="text-3xl font-bold mb-6">Create a Shipment Request</h2>
+                        <form id="create-shipment-form">
+                            <h3 class="text-xl font-bold mb-4 border-b pb-2">Shipment Info</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                <div class="relative">
+                                    <label class="block font-medium text-slate-700 mb-1" for="origin">Origin</label>
+                                    <input type="text" id="origin" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Mumbai, India">
+                                </div>
+                                <div class="relative">
+                                    <label class="block font-medium text-slate-700 mb-1" for="destination">Destination</label>
+                                    <input type="text" id="destination" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., London, UK">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block font-medium text-slate-700 mb-1" for="item-description">Item Description</label>
+                                <textarea id="item-description" required rows="3" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Important documents, a small gift box..."></textarea>
+                            </div>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block font-medium text-slate-700 mb-1" for="item-weight">Approx. Weight (kg)</label>
+                                    <input type="number" id="item-weight" step="0.1" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 0.5">
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-slate-700 mb-1" for="delivery-fee">Proposed Fee ($)</label>
+                                    <input type="number" id="delivery-fee" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 25">
+                                </div>
+                            </div>
+
+                            <h3 class="text-xl font-bold mt-6 mb-4 border-b pb-2">Your Contact Info</h3>
+                            <p class="text-sm text-slate-500 mb-4">This will only be shared with the traveler after they accept your shipment.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block font-medium text-slate-700 mb-1" for="sender-name">Your Name</label>
+                                    <input type="text" id="sender-name" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., John Doe">
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-slate-700 mb-1" for="sender-email">Your Email</label>
+                                    <input type="email" id="sender-email" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., john.doe@example.com">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-medium text-slate-700 mb-1" for="sender-phone">Your Phone Number</label>
+                                    <div class="flex">
+                                        <select id="sender-country-code" class="w-1/3 border border-r-0 border-slate-300 rounded-l-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500">
+                                            <!-- Country codes will be populated by JS -->
+                                        </select>
+                                        <input type="tel" id="sender-phone" required class="w-2/3 px-4 py-2 border border-slate-300 rounded-r-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 555-123-4567">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-6">
+                                <p class="font-bold">Important Notice</p>
+                                <p class="text-sm">You must be willing to show the contents of your package to the traveler for safety and customs compliance. Do not seal your package beforehand.</p>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Post Shipment Request</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Find Shipment View -->
+            <div id="find-shipment-view" class="view">
+                 <div class="max-w-4xl mx-auto">
+                    <button class="back-to-dashboard text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
+                    <div class="bg-white p-8 rounded-xl shadow-lg">
+                        <div id="search-criteria-display" class="mb-6">
+                            <h2 class="text-3xl font-bold">Available Shipments</h2>
+                        </div>
+                        <div id="available-shipments-container" class="space-y-4">
+                           <!-- Available shipments will be dynamically loaded here -->
+                           <p class="text-center text-slate-500 py-8">Loading available shipments...</p>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+            
+            <!-- Conversations View -->
+            <div id="conversations-view" class="view">
+                 <div class="max-w-4xl mx-auto">
+                    <button class="back-to-dashboard text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
+                    <div class="bg-white p-8 rounded-xl shadow-lg">
+                        <h2 class="text-3xl font-bold mb-6">My Conversations</h2>
+                        <div id="conversations-view-list" class="space-y-4">
+                           <p class="text-center text-slate-500 py-8">Loading conversations...</p>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Chat View -->
+            <div id="chat-view" class="view">
+                 <div class="max-w-2xl mx-auto">
+                    <button class="back-to-dashboard text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
+                    <div class="bg-white rounded-xl shadow-lg">
+                        <div id="chat-header" class="p-4 border-b">
+                            <!-- Chat header content will be injected here -->
+                        </div>
+                        <div id="messages-container" class="p-4 h-[60vh] overflow-y-auto flex flex-col space-y-4">
+                            <!-- Messages will be injected here -->
+                        </div>
+                        <div class="p-4 border-t bg-slate-50">
+                            <form id="message-form" class="flex space-x-2">
+                                <input type="text" id="message-input" placeholder="Type your message..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" autocomplete="off" required>
+                                <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-all duration-200"><i class="fas fa-paper-plane"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+          <!-- About Us View -->
+            <div id="terms-and-conditions-view" class="view">
+                <div class="max-w-4xl mx-auto">
+                     <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
+                    <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl">
+                       <h1 style="text-align:center;">Terms and Conditions</h1>
+  <p><strong>Effective Date:</strong> [Date]</p>
+
+  <h2>1. Introduction</h2>
+  <p>Welcome to <strong>[Your Company Name]</strong> (“the Platform”, “we”, “us”). By accessing or using <strong>[Website URL]</strong>, you agree to these Terms and Conditions (“Terms”). If you do not agree, please discontinue use immediately.</p>
+
+  <h2>2. Nature of Service</h2>
+  <p>The Platform is an <strong>online marketplace</strong> that connects <strong>travellers</strong> with spare luggage space and <strong>senders</strong> who wish to send items to the same destination. <strong>[Your Company Name]</strong> only provides the digital interface for listings, communication, and payments through third-party gateways such as <strong>Razorpay</strong>.</p>
+  <p>We do <strong>not handle, inspect, store, verify, transport, or deliver</strong> any goods and are <strong>not a courier, logistics, or freight company</strong>.</p>
+
+  <h2>3. User Eligibility</h2>
+  <ul>
+    <li>You must be at least 18 years old.</li>
+    <li>You must provide accurate and truthful information.</li>
+    <li>You must complete KYC or verification if requested.</li>
+  </ul>
+  <p>We may refuse or terminate service to any user at any time without prior notice.</p>
+
+  <h2>4. User Responsibilities</h2>
+  <p>All transactions and communications between travellers and senders are <strong>private arrangements made entirely at their own risk</strong>.</p>
+  <ul>
+    <li>Users must comply with all applicable <strong>customs, airline, and transport laws</strong>.</li>
+    <li>Users must never send or carry prohibited or illegal items.</li>
+    <li>The Platform is not responsible for verifying user conduct or the legality of any item.</li>
+  </ul>
+
+  <h2>5. Payments and Fees</h2>
+  <ul>
+    <li>Payments are securely processed via <strong>Razorpay</strong> or other payment gateways.</li>
+    <li>The Platform may charge a service fee, which is displayed before payment.</li>
+    <li>Once users are connected, <strong>fees are non-refundable</strong>.</li>
+    <li>The Platform is not responsible for failed payments, chargebacks, or refunds.</li>
+  </ul>
+
+  <h2>6. Zero Liability Disclaimer</h2>
+  <p>To the fullest extent permitted by law:</p>
+  <ul>
+    <li>Use of the Platform is <strong>100% at the user’s own risk</strong>.</li>
+    <li><strong>[Your Company Name]</strong> and its owners, employees, and affiliates accept <strong>no liability</strong> for any loss, theft, damage, delay, non-delivery, customs issue, injury, or any direct or indirect consequence arising from user actions.</li>
+    <li>No insurance, refund, compensation, or claim mechanism is provided.</li>
+    <li>By using the Platform, you <strong>waive any right to claim or demand damages</strong> against <strong>[Your Company Name]</strong>.</li>
+  </ul>
+
+  <h2>7. Prohibited Items</h2>
+  <p>Users must never send or carry:</p>
+  <ul>
+    <li>Illegal drugs or narcotics</li>
+    <li>Weapons, explosives, ammunition</li>
+    <li>Hazardous, flammable, or toxic materials</li>
+    <li>Alcohol, tobacco, or restricted substances</li>
+    <li>Cash, jewellery, precious metals, or valuables</li>
+    <li>Passports, IDs, or confidential documents</li>
+    <li>Live animals, food, or perishables</li>
+    <li>Counterfeit or stolen goods</li>
+    <li>Any item prohibited by airline or customs laws</li>
+  </ul>
+  <p>Violation may result in immediate account termination and reporting to authorities.</p>
+
+  <h2>8. Disputes Between Users</h2>
+  <p>The Platform <strong>does not mediate or resolve</strong> disputes between travellers and senders. All disagreements must be settled privately. The Platform will not refund, intervene, or provide evidence for any user dispute.</p>
+
+  <h2>9. Account Termination</h2>
+  <p>We may suspend or delete any account, without notice, for suspected fraud, illegal activity, or violation of these Terms. Users may delete their accounts at any time.</p>
+
+  <h2>10. Indemnification</h2>
+  <p>You agree to <strong>indemnify and hold harmless</strong> <strong>[Your Company Name]</strong>, its owners, directors, and employees from any claim, loss, damage, liability, or expense arising from your use of the Platform or breach of these Terms.</p>
+
+  <h2>11. No Warranties</h2>
+  <p>The Platform is provided <strong>“as is”</strong> and <strong>“as available”</strong> with no warranties, express or implied, including merchantability or fitness for a particular purpose.</p>
+
+  <h2>12. Governing Law and Jurisdiction</h2>
+  <p>These Terms are governed by the laws of <strong>India</strong>. All disputes shall be subject to the exclusive jurisdiction of the courts of <strong>[City, State]</strong>, India.</p>
+
+  <h2>13. Changes to Terms</h2>
+  <p>We may modify these Terms at any time by posting an updated version on this page. Continued use of the Platform means you accept the updated Terms.</p>
+
+  <h2>14. Contact Information</h2>
+  <p><strong>Email:</strong> [Contact Email]<br>
+  <strong>Address:</strong> [Registered Address]</p>
+
+  <h3 style="margin-top:30px; color:#b00;">⚠️ Important Disclaimer</h3>
+  <p><strong>[Your Company Name]</strong> is an online meeting platform only. We do not verify users or items and are not responsible for any delivery, payment, or legal issue between users. Use of this Platform is entirely at your own risk, and no claims or compensation will be entertained.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guidelines View -->
+            <div id="guidelines-view" class="view">
+                 <div class="max-w-4xl mx-auto">
+                     <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
+                    <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl">
+                        <h2>Community Guidelines</h2>
+                        <p>To ensure a safe, secure, and positive experience for everyone on Lugfer, we ask all members of our community to adhere to the following guidelines.</p>
+                        <h3>For Senders</h3>
+                        <ul>
+                            <li><strong>Be Honest and Accurate:</strong> Clearly and accurately describe the item you are sending, including its contents, size, and weight. Misrepresenting an item can lead to complications and is a violation of our policy.</li>
+                            <li><strong>Do Not Send Prohibited Items:</strong> It is your responsibility to ensure you are not shipping illegal, dangerous, or restricted items. This includes, but is not limited to: flammable materials, weapons, drugs, live animals, and perishable goods.</li>
+                            <li><strong>Be Prepared for Inspection:</strong> For the safety and peace of mind of our travelers, you must be willing to show the contents of your package before it is sealed. This is a mandatory step.</li>
+                            <li><strong>Communicate Clearly:</strong> Coordinate a clear and convenient time and place for the pickup with your traveler. Be punctual and respectful of their schedule.</li>
+                        </ul>
+                        <h3>For Travelers</h3>
+                        <ul>
+                            <li><strong>Inspect All Items:</strong> You have the right and responsibility to inspect any package before you accept it. Do not accept sealed packages. If you are uncomfortable with an item for any reason, you are not obligated to carry it.</li>
+                            <li><strong>Understand Customs Regulations:</strong> You are responsible for knowing and complying with all customs and import/export laws of your destination country or region. Do not carry items that could cause legal issues for you.</li>
+                            <li><strong>Communicate Proactively:</strong> Keep the sender updated on your travel status and arrange a clear time and location for the final delivery.</li>
+                            <li><strong>Handle with Care:</strong> Treat the sender's items with the same care you would treat your own belongings.</li>
+                        </ul>
+                         <h3>General Policy</h3>
+                         <p>Lugfer is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Us View -->
+             <div id="contact-us-view" class="view">
+                <div class="max-w-4xl mx-auto">
+                     <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
+                    <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl text-center">
+                        <h2>Contact Us</h2>
+                        <p>Have questions, feedback, or need support? We'd love to hear from you!</p>
+                        <p>For all inquiries, please reach out to our support team at:</p>
+                        <a href="mailto:support@luggagelink.com" class="text-blue-600 font-bold text-xl hover:underline">support@luggagelink.com</a>
+                        <p class="mt-4 text-sm text-slate-500">We do our best to respond to all inquiries within 24-48 hours.</p>
+                        <p>This website is run by AR Developer.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guidelines Acceptance View -->
+            <div id="guidelines-acceptance-view" class="view">
+                 <div class="max-w-4xl mx-auto">
+                    <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl">
+                        <h2>Welcome to Lugfer!</h2>
+                        <p>Before you get started, please take a moment to read and agree to our Community Guidelines. This helps us maintain a safe and trustworthy environment for all users.</p>
+                        <div class="h-96 overflow-y-auto border p-4 rounded-lg my-4 bg-slate-50">
+                            <h3>For Senders</h3>
+                            <ul>
+                                <li><strong>Be Honest and Accurate:</strong> Clearly and accurately describe the item you are sending, including its contents, size, and weight. Misrepresenting an item can lead to complications and is a violation of our policy.</li>
+                                <li><strong>Do Not Send Prohibited Items:</strong> It is your responsibility to ensure you are not shipping illegal, dangerous, or restricted items. This includes, but is not limited to: flammable materials, weapons, drugs, live animals, and perishable goods.</li>
+                                <li><strong>Be Prepared for Inspection:</strong> For the safety and peace of mind of our travelers, you must be willing to show the contents of your package before it is sealed. This is a mandatory step.</li>
+                                <li><strong>Communicate Clearly:</strong> Coordinate a clear and convenient time and place for the pickup with your traveler. Be punctual and respectful of their schedule.</li>
+                            </ul>
+                            <h3>For Travelers</h3>
+                            <ul>
+                                <li><strong>Inspect All Items:</strong> You have the right and responsibility to inspect any package before you accept it. Do not accept sealed packages. If you are uncomfortable with an item for any reason, you are not obligated to carry it.</li>
+                                <li><strong>Understand Customs Regulations:</strong> You are responsible for knowing and complying with all customs and import/export laws of your destination country or region. Do not carry items that could cause legal issues for you.</li>
+                                <li><strong>Communicate Proactively:</strong> Keep the sender updated on your travel status and arrange a clear time and location for the final delivery.</li>
+                                <li><strong>Handle with Care:</strong> Treat the sender's items with the same care you would treat your own belongings.</li>
+                            </ul>
+                            <h3>General Policy</h3>
+                            <p>Lugfer is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
+                        </div>
+                        <div class="flex items-center mt-6">
+                            <input id="accept-guidelines-checkbox" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="accept-guidelines-checkbox" class="ml-2 block text-sm text-gray-900">
+                                I have read and agree to the Community Guidelines.
+                            </label>
+                        </div>
+                        <button id="accept-guidelines-btn" class="w-full mt-4 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed" disabled>
+                            Continue to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal for showing shipment details -->
+    <div id="details-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <!-- Content will be injected here -->
+        </div>
+    </div>
+
+
+    <!-- Firebase and App Logic -->
+    <script type="module">
+        // Import Firebase services
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, EmailAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, addDoc, collection, onSnapshot, query, where, updateDoc, serverTimestamp, orderBy, getDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- App State ---
+        let auth, db, app;
+        let currentUser = null;
+        let currentChatId = null;
+        let unsubscribeMessages = null;
+
+        // --- DOM Elements ---
+        const views = document.querySelectorAll('.view');
+        const navLinks = document.getElementById('nav-links');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const detailsModal = document.getElementById('details-modal');
+        const modalContent = document.getElementById('modal-content');
+
+        // --- API Keys ---
+        const googleMapsApiKey = "AIzaSyDq3I611UsVp-LptnWMBgH7vhpX4dNmFoU"; // <-- IMPORTANT: REPLACE THIS KEY
+
+        // --- Firebase Config and Init ---
+        // These are the real credentials from your Firebase project.
+        const firebaseConfig = {
+          apiKey: "AIzaSyCLFhlXGi1gNA6nKrsoRVhOGlQ4ltkhoLo",
+          authDomain: "lugfer2149.firebaseapp.com",
+          projectId: "lugfer2149",
+          storageBucket: "lugfer2149.appspot.com",
+          messagingSenderId: "145633549913",
+          appId: "1:145633549913:web:60e4ab6c2c9ae15b11b48",
+          measurementId: "G-MH569S3H31"
+        };
+        
+        // This global variable is expected to be provided by the hosting environment for database paths.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+
+        // --- Core App Logic ---
+        
+        /**
+         * Initializes the application, sets up Firebase, and adds event listeners.
+         */
+        function init() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                document.getElementById('auth-container').innerHTML = `<p class="text-red-500 font-bold">Firebase Initialization Failed</p><p class="text-slate-600 mt-2 text-sm font-mono bg-slate-100 p-2 rounded">${e.message}</p><p class="text-slate-500 mt-4 text-sm">This usually means the API key is invalid or restricted. Please double-check your Firebase project settings.</p>`;
+                return;
+            }
+            
+            setupAuthListener();
+            setupEventListeners();
+            loadGooglePlacesAPI(); // Load Google Maps API
+            populateCountryCodes(); // Populate country code dropdown
+            showView('auth-view');
+        }
+
+        /**
+         * Sets up an observer on the Auth object to listen for user sign-in state changes.
+         */
+        function setupAuthListener() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    
+                    // Check if user has accepted guidelines
+                    const userRef = doc(db, "users", user.uid);
+                    const userSnap = await getDoc(userRef);
+
+                    if (userSnap.exists() && userSnap.data().guidelinesAccepted) {
+                        const userIdDisplayDashboard = document.getElementById('user-id-display-dashboard');
+                        if(userIdDisplayDashboard) userIdDisplayDashboard.textContent = currentUser.uid;
+                        showView('dashboard-view');
+                        updateNav();
+                        loadDashboardData();
+                    } else {
+                        showView('guidelines-acceptance-view');
+                        updateNav();
+                    }
+                } else {
+                    currentUser = null;
+                    showView('auth-view');
+                    updateNav();
+                    renderAuthUI();
+                }
+            });
+        }
+        
+        /**
+         * Sets up all the event listeners for the application.
+         */
+        function setupEventListeners() {
+            // Mobile menu toggle
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            document.getElementById('logo-link').addEventListener('click', (e) => {
+                 e.preventDefault();
+                 showView(currentUser ? 'dashboard-view' : 'auth-view');
+            });
+            
+            // View navigation buttons
+            document.getElementById('show-create-shipment-btn').addEventListener('click', () => showView('create-shipment-view'));
+            
+            document.getElementById('find-matching-shipments-btn').addEventListener('click', () => {
+                const originInput = document.getElementById('traveler-origin');
+                const destinationInput = document.getElementById('traveler-destination');
+                const errorEl = document.getElementById('traveler-error');
+
+                const origin = originInput.value.trim();
+                const destination = destinationInput.value.trim();
+                
+                // Reset validation
+                errorEl.textContent = '';
+                originInput.classList.remove('border-red-500');
+                destinationInput.classList.remove('border-red-500');
+
+                if (!origin || !destination) {
+                    errorEl.textContent = 'Please enter both origin and destination.';
+                    if (!origin) originInput.classList.add('border-red-500');
+                    if (!destination) destinationInput.classList.add('border-red-500');
+                    return;
+                }
+
+                showView('find-shipment-view');
+                loadAvailableShipments(origin, destination);
+            });
+
+
+            document.querySelectorAll('.back-to-dashboard').forEach(btn => {
+                btn.addEventListener('click', () => showView('dashboard-view'));
+            });
+
+            document.querySelectorAll('.back-to-dashboard-info').forEach(btn => {
+                btn.addEventListener('click', () => showView(currentUser ? 'dashboard-view' : 'auth-view'));
+            });
+
+            // Form submission
+            document.getElementById('create-shipment-form').addEventListener('submit', handleCreateShipment);
+            
+            // Modal close
+            detailsModal.addEventListener('click', (e) => {
+                if (e.target === detailsModal) {
+                    detailsModal.classList.add('hidden');
+                }
+            });
+
+            // Phone number validation listeners
+            const countryCodeSelect = document.getElementById('sender-country-code');
+            const phoneInput = document.getElementById('sender-phone');
+
+            countryCodeSelect.addEventListener('change', () => {
+                updatePhoneInputAttributes();
+                phoneInput.value = ''; // Clear input on change
+                phoneInput.focus();
+            });
+
+            // Add input filter to only allow numbers
+            phoneInput.addEventListener('input', () => {
+                phoneInput.value = phoneInput.value.replace(/[^0-9]/g, '');
+            });
+
+            // Guidelines Acceptance Logic
+            const acceptCheckbox = document.getElementById('accept-guidelines-checkbox');
+            const acceptBtn = document.getElementById('accept-guidelines-btn');
+
+            acceptCheckbox.addEventListener('change', () => {
+                acceptBtn.disabled = !acceptCheckbox.checked;
+            });
+
+            acceptBtn.addEventListener('click', async () => {
+                if (!currentUser) return;
+                const userRef = doc(db, "users", currentUser.uid);
+                try {
+                    await setDoc(userRef, { guidelinesAccepted: true }, { merge: true });
+                    showView('dashboard-view');
+                    loadDashboardData();
+                } catch (error) {
+                    console.error("Error accepting guidelines: ", error);
+                    alert("Could not save your acceptance. Please try again.");
+                }
+            });
+        }
+
+        /**
+         * Controls which view is visible on the screen.
+         * @param {string} viewId The ID of the view to show.
+         */
+        function showView(viewId) {
+            // If leaving chat view, unsubscribe from message listener
+            const currentActive = document.querySelector('.view.active');
+            if (currentActive && currentActive.id === 'chat-view' && unsubscribeMessages) {
+                unsubscribeMessages();
+                unsubscribeMessages = null;
+            }
+
+            views.forEach(view => {
+                view.classList.remove('active');
+            });
+            const activeView = document.getElementById(viewId);
+            if (activeView) {
+                activeView.classList.add('active');
+            }
+            window.scrollTo(0, 0); // Scroll to top on view change
+            mobileMenu.classList.add('hidden'); // Hide mobile menu on navigation
+        }
+
+        // --- UI Rendering Functions ---
+
+        /**
+         * Renders the authentication UI with social login buttons.
+         */
+        function renderAuthUI() {
+            const authContainer = document.getElementById('auth-container');
+            authContainer.innerHTML = `
+                <!-- Email Form -->
+                <div id="email-form-container" class="space-y-4">
+                    <input type="email" id="email-input" placeholder="Email Address" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                    <input type="password" id="password-input" placeholder="Password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                    <div class="flex space-x-2">
+                        <button id="email-signin-btn" class="w-1/2 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Sign In</button>
+                        <button id="email-signup-btn" class="w-1/2 bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 transition duration-300">Sign Up</button>
+                    </div>
+                </div>
+                
+                <div class="relative flex py-5 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400">OR</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <button id="signin-google-btn" class="w-full flex items-center justify-center bg-white border border-slate-300 text-slate-700 font-bold py-3 px-4 rounded-lg hover:bg-slate-50 transition duration-300">
+                    <svg class="w-5 h-5 mr-3" viewBox="0 0 48 48" width="48px" height="48px"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
+                    Sign In with Google
+                </button>
+                <div id="auth-error" class="text-red-500 text-sm mt-4 h-5"></div>
+            `;
+            
+            // Add event listeners
+            document.getElementById('signin-google-btn').addEventListener('click', signInWithGoogle);
+            document.getElementById('email-signup-btn').addEventListener('click', handleEmailSignUp);
+            document.getElementById('email-signin-btn').addEventListener('click', handleEmailSignIn);
+        }
+        
+        /**
+         * Updates the navigation bar based on the user's authentication state.
+         */
+        function updateNav() {
+            let linksHtml = '';
+            
+            if (currentUser) {
+                // Logged-in user view
+                linksHtml = `
+                    <div class="flex items-center space-x-2">
+                        <a href="#" id="nav-dashboard" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Dashboard</a>
+                        <a href="#" id="nav-conversations" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Conversations</a>
+                        <a href="#" id="nav-guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
+                        <a href="#" id="nav-terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms and Conditions</a>
+                        <a href="#" id="nav-contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
+                        <button id="signout-btn" class="ml-4 bg-slate-100 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-200">Sign Out</button>
+                    </div>`;
+            } else {
+                 // Logged-out user view
+                 linksHtml = `
+                    <div class="flex items-center space-x-2">
+                        <a href="#" id="nav-guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
+                        <a href="#" id="nav-terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms and Conditions</a>
+                        <a href="#" id="nav-contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
+                        <button id="signin-link" class="ml-4 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
+                    </div>`;
+            }
+            
+            navLinks.innerHTML = linksHtml;
+            mobileMenu.innerHTML = `<div class="p-4 flex flex-col space-y-2">${linksHtml.replace(/class="flex items-center space-x-2"/g, '')}</div>`; // Make mobile links vertical
+            
+            // Always add listeners for info pages
+            document.getElementById('nav-terms-and-conditions').addEventListener('click', (e) => { e.preventDefault(); showView('terms-and-conditions-view'); });
+            document.getElementById('nav-guidelines').addEventListener('click', (e) => { e.preventDefault(); showView('guidelines-view'); });
+            document.getElementById('nav-contact-us').addEventListener('click', (e) => { e.preventDefault(); showView('contact-us-view'); });
+
+            if (currentUser) {
+                document.getElementById('signout-btn').addEventListener('click', () => auth.signOut());
+                document.getElementById('nav-dashboard').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showView('dashboard-view');
+                });
+                document.getElementById('nav-conversations').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showView('conversations-view');
+                });
+            } else {
+                 document.getElementById('signin-link').addEventListener('click', () => showView('auth-view'));
+            }
+        }
+        
+        /**
+         * Renders a list of shipments into a given container.
+         * @param {Array} shipments The array of shipment objects.
+         * @param {HTMLElement} container The container element to render into.
+         * @param {string} emptyMessage The message to show if there are no shipments.
+         */
+        function renderShipmentList(shipments, container, emptyMessage) {
+            if (shipments.length === 0) {
+                container.innerHTML = `<p class="text-slate-500">${emptyMessage}</p>`;
+                return;
+            }
+            container.innerHTML = shipments.map(shipment => `
+                <div class="border rounded-lg p-3 flex justify-between items-center bg-slate-50 cursor-pointer hover:bg-slate-100" data-id="${shipment.id}">
+                    <div>
+                        <p class="font-bold">${shipment.origin} <i class="fas fa-long-arrow-alt-right mx-1 text-slate-400"></i> ${shipment.destination}</p>
+                        <p class="text-sm text-slate-500">${shipment.itemDescription.substring(0, 30)}...</p>
+                    </div>
+                    <span class="text-sm font-semibold py-1 px-2.5 rounded-full ${getStatusColor(shipment.status)}">${shipment.status}</span>
+                </div>
+            `).join('');
+            
+            // Add click listeners to show details
+            container.querySelectorAll('div[data-id]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const shipment = shipments.find(s => s.id === el.dataset.id);
+                    if (shipment) showShipmentDetails(shipment);
+                })
+            });
+        }
+
+        /**
+         * Renders a list of conversations into the dashboard.
+         * @param {Array} conversations The array of chat objects.
+         * @param {HTMLElement} container The container element to render into.
+         */
+        function renderConversations(conversations, container) {
+            if (conversations.length === 0) {
+                container.innerHTML = `<p class="text-slate-500">You have no active conversations.</p>`;
+                return;
+            }
+
+            container.innerHTML = conversations.map(chat => {
+                const otherUser = chat.members.find(uid => uid !== currentUser.uid);
+                const lastMessage = chat.lastMessage ? chat.lastMessage.substring(0, 40) + '...' : 'No messages yet.';
+                const isUnread = chat.lastMessage && (!chat.lastMessageReadBy || !chat.lastMessageReadBy.includes(currentUser.uid));
+                const highlightClass = isUnread ? 'bg-blue-50 hover:bg-blue-100 border-l-4 border-blue-500' : 'bg-slate-50 hover:bg-slate-100';
+                
+                return `
+                <div class="border rounded-lg p-3 flex justify-between items-center cursor-pointer relative ${highlightClass}" data-chat-id="${chat.id}" data-recipient-id="${otherUser}" data-shipment-id="${chat.shipmentId}">
+                    <div>
+                        <p class="font-bold text-sm">Chat about: ${chat.origin || 'Unknown'} <i class="fas fa-long-arrow-alt-right mx-1 text-slate-400"></i> ${chat.destination || 'Unknown'}</p>
+                        <p class="text-xs text-slate-600">With: <span class="font-mono">${otherUser}</span></p>
+                        <p class="text-sm text-slate-500 italic mt-1">"${lastMessage}"</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-slate-400"></i>
+                </div>
+            `}).join('');
+
+            container.querySelectorAll('div[data-chat-id]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    const chatId = e.currentTarget.dataset.chatId;
+                    const recipientId = e.currentTarget.dataset.recipientId;
+                    const shipmentId = e.currentTarget.dataset.shipmentId;
+                    
+                    // We call handleInitiateChat because it contains the logic to update old chats
+                    handleInitiateChat(recipientId, shipmentId);
+                });
+            });
+        }
+        
+        /**
+         * Renders the details of a shipment in a modal.
+         * @param {object} shipment The shipment object.
+         */
+        function showShipmentDetails(shipment) {
+            const isMyShipment = shipment.senderId === currentUser.uid;
+            const isMyDelivery = shipment.travelerId === currentUser.uid;
+            const canAccept = shipment.status === 'available' && !isMyShipment;
+            const canContact = shipment.status === 'matched' && (isMyShipment || isMyDelivery);
+            const canUnmatch = shipment.status === 'matched' && isMyDelivery;
+            const showContactInfo = shipment.status === 'matched' && (isMyDelivery || isMyShipment);
+
+            let contactButtonHtml = '';
+            if (canContact) {
+                 if (isMyShipment) { // I am the sender, I want to message the traveler
+                    contactButtonHtml = `<button id="contact-btn" data-recipient-id="${shipment.travelerId}" data-shipment-id="${shipment.id}" class="w-full bg-slate-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-800 transition duration-300">Message Traveler</button>`;
+                } else { // I am the traveler, I want to message the sender
+                    contactButtonHtml = `<button id="contact-btn" data-recipient-id="${shipment.senderId}" data-shipment-id="${shipment.id}" class="w-full bg-slate-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-800 transition duration-300">Message Sender</button>`;
+                }
+            }
+
+
+            modalContent.innerHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-2xl font-bold mb-4">Shipment Details</h3>
+                        <button id="close-modal-btn" class="text-slate-400 hover:text-slate-600">&times;</button>
+                    </div>
+                    <div class="space-y-3 text-slate-600">
+                        <p><strong>From:</strong> <span class="font-medium text-slate-800">${shipment.origin}</span></p>
+                        <p><strong>To:</strong> <span class="font-medium text-slate-800">${shipment.destination}</span></p>
+                        <p><strong>Item:</strong> <span class="font-medium text-slate-800">${shipment.itemDescription}</span></p>
+                        <p><strong>Weight:</strong> <span class="font-medium text-slate-800">${shipment.itemWeight} kg</span></p>
+                        <p><strong>Fee:</strong> <span class="font-bold text-green-600 text-lg">$${shipment.deliveryFee}</span></p>
+                        <p><strong>Status:</strong> <span class="font-semibold py-1 px-2.5 rounded-full ${getStatusColor(shipment.status)}">${shipment.status}</span></p>
+                        <hr class="my-4">
+                        <p class="text-xs text-slate-500"><strong>Sender ID:</strong> <span class="font-mono">${shipment.senderId}</span></p>
+                        ${shipment.travelerId ? `<p class="text-xs text-slate-500"><strong>Traveler ID:</strong> <span class="font-mono">${shipment.travelerId}</span></p>` : ''}
+                        
+                        ${showContactInfo ? `
+                        <div class="mt-4 pt-4 border-t">
+                             <details>
+                                <summary class="font-bold cursor-pointer text-slate-800 hover:text-blue-600">Show Contact Info</summary>
+                                <div class="mt-2 pl-4 space-y-2 border-l-2">
+                                    <p><strong>Name:</strong> <span class="font-medium text-slate-800">${shipment.senderName}</span></p>
+                                    <p><strong>Email:</strong> <span class="font-medium text-slate-800">${shipment.senderEmail}</span></p>
+                                    <p><strong>Phone:</strong> <span class="font-medium text-slate-800">${shipment.senderPhone}</span></p>
+                                </div>
+                            </details>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="mt-6 space-y-2">
+                        ${contactButtonHtml}
+                        ${canAccept ? `<button id="accept-shipment-btn" data-id="${shipment.id}" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300">Accept this Shipment</button>` : ''}
+                        ${canUnmatch ? `<button id="unmatch-shipment-btn" data-id="${shipment.id}" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition duration-300">Unmatch Shipment</button>` : ''}
+                    </div>
+                </div>
+            `;
+            detailsModal.classList.remove('hidden');
+
+            document.getElementById('close-modal-btn').addEventListener('click', () => detailsModal.classList.add('hidden'));
+            
+            if (canContact) {
+                document.getElementById('contact-btn').addEventListener('click', (e) => {
+                    const recipientId = e.currentTarget.dataset.recipientId;
+                    const shipmentId = e.currentTarget.dataset.shipmentId;
+                    handleInitiateChat(recipientId, shipmentId);
+                });
+            }
+
+            if (canAccept) {
+                document.getElementById('accept-shipment-btn').addEventListener('click', (e) => {
+                    handleAcceptShipment(e.currentTarget.dataset.id);
+                });
+            }
+            
+            if (canUnmatch) {
+                document.getElementById('unmatch-shipment-btn').addEventListener('click', (e) => {
+                    handleUnmatchShipment(e.currentTarget.dataset.id);
+                });
+            }
+        }
+        
+        /**
+         * Helper to get status color classes.
+         * @param {string} status The status string.
+         * @returns {string} Tailwind CSS classes for the status badge.
+         */
+        function getStatusColor(status) {
+            switch(status) {
+                case 'available': return 'bg-blue-100 text-blue-800';
+                case 'matched': return 'bg-yellow-100 text-yellow-800';
+                case 'in-transit': return 'bg-purple-100 text-purple-800';
+                case 'delivered': return 'bg-green-100 text-green-800';
+                default: return 'bg-slate-100 text-slate-800';
+            }
+        }
+
+        // --- Google Places API Functions ---
+
+        /**
+         * Loads the Google Places API script dynamically.
+         */
+        function loadGooglePlacesAPI() {
+            if (googleMapsApiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
+                console.warn("Google Maps API key is a placeholder. Autocomplete will not work.");
+                return;
+            }
+            if (!window.google || !window.google.maps || !window.google.maps.places) {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places&callback=initAutocomplete`;
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+            } else {
+                 initAutocomplete();
+            }
+        }
+
+        /**
+         * Initializes the Google Places Autocomplete on the input fields.
+         * This function is made global to be accessible by the Google Maps script callback.
+         */
+        window.initAutocomplete = function() {
+            const options = {
+                fields: ["formatted_address", "name"],
+                strictBounds: false,
+            };
+            
+            const inputs = ['origin', 'destination', 'traveler-origin', 'traveler-destination'];
+            inputs.forEach(id => {
+                const inputEl = document.getElementById(id);
+                if (inputEl) {
+                    new google.maps.places.Autocomplete(inputEl, options);
+                }
+            });
+        }
+        
+        /**
+         * Sets the maxlength attribute on the phone input based on the selected country.
+         */
+        function updatePhoneInputAttributes() {
+            const countryCodeSelect = document.getElementById('sender-country-code');
+            const phoneInput = document.getElementById('sender-phone');
+            const selectedOption = countryCodeSelect.options[countryCodeSelect.selectedIndex];
+            const maxLength = selectedOption.dataset.length;
+            
+            if (maxLength) {
+                phoneInput.setAttribute('maxlength', maxLength);
+            } else {
+                phoneInput.removeAttribute('maxlength');
+            }
+        }
+
+        /**
+         * Populates the country code dropdown.
+         */
+        function populateCountryCodes(selectId = 'sender-country-code') {
+            const countryCodes = [
+                { name: 'United States', code: '+1', length: 10 }, { name: 'United Kingdom', code: '+44', length: 10 }, { name: 'India', code: '+91', length: 10 },
+                { name: 'Afghanistan', code: '+93' }, { name: 'Albania', code: '+355' }, { name: 'Algeria', code: '+213' },
+                { name: 'Andorra', code: '+376' }, { name: 'Angola', code: '+244' }, { name: 'Argentina', code: '+54' },
+                { name: 'Armenia', code: '+374' }, { name: 'Australia', code: '+61', length: 9 }, { name: 'Austria', code: '+43' },
+                { name: 'Azerbaijan', code: '+994' }, { name: 'Bahamas', code: '+1242' }, { name: 'Bahrain', code: '+973' },
+                { name: 'Bangladesh', code: '+880' }, { name: 'Belarus', code: '+375' }, { name: 'Belgium', code: '+32' },
+                { name: 'Belize', code: '+501' }, { name: 'Benin', code: '+229' }, { name: 'Bhutan', code: '+975' },
+                { name: 'Bolivia', code: '+591' }, { name: 'Bosnia and Herzegovina', code: '+387' }, { name: 'Botswana', code: '+267' },
+                { name: 'Brazil', code: '+55', length: 11 }, { name: 'Brunei', code: '+673' }, { name: 'Bulgaria', code: '+359' },
+                { name: 'Burkina Faso', code: '+226' }, { name: 'Cambodia', code: '+855' }, { name: 'Cameroon', code: '+237' },
+                { name: 'Canada', code: '+1', length: 10 }, { name: 'Chile', code: '+56' }, { name: 'China', code: '+86', length: 11 },
+                { name: 'Colombia', code: '+57' }, { name: 'Congo', code: '+242' }, { name: 'Costa Rica', code: '+506' },
+                { name: 'Croatia', code: '+385' }, { name: 'Cuba', code: '+53' }, { name: 'Cyprus', code: '+357' },
+                { name: 'Czech Republic', code: '+420' }, { name: 'Denmark', code: '+45' }, { name: 'Dominican Republic', code: '+1809' },
+                { name: 'Ecuador', code: '+593' }, { name: 'Egypt', code: '+20' }, { name: 'El Salvador', code: '+503' },
+                { name: 'Estonia', code: '+372' }, { name: 'Ethiopia', code: '+251' }, { name: 'Finland', code: '+358' },
+                { name: 'France', code: '+33' }, { name: 'Georgia', code: '+995' }, { name: 'Germany', code: '+49', length: 11 },
+                { name: 'Ghana', code: '+233' }, { name: 'Greece', code: '+30' }, { name: 'Guatemala', code: '+502' },
+                { name: 'Honduras', code: '+504' }, { name: 'Hong Kong', code: '+852', length: 8 }, { name: 'Hungary', code: '+36' },
+                { name: 'Iceland', code: '+354' }, { name: 'Indonesia', code: '+62' }, { name: 'Iran', code: '+98' },
+                { name: 'Iraq', code: '+964' }, { name: 'Ireland', code: '+353' }, { name: 'Israel', code: '+972' },
+                { name: 'Italy', code: '+39' }, { name: 'Jamaica', code: '+1876' }, { name: 'Japan', code: '+81' },
+                { name: 'Jordan', code: '+962' }, { name: 'Kazakhstan', code: '+7' }, { name: 'Kenya', code: '+254' },
+                { name: 'Kuwait', code: '+965' }, { name: 'Latvia', code: '+371' }, { name: 'Lebanon', code: '+961' },
+                { name: 'Libya', code: '+218' }, { name: 'Lithuania', code: '+370' }, { name: 'Luxembourg', code: '+352' },
+                { name: 'Malaysia', code: '+60' }, { name: 'Maldives', code: '+960' }, { name: 'Malta', code: '+356' },
+                { name: 'Mexico', code: '+52' }, { name: 'Monaco', code: '+377' }, { name: 'Mongolia', code: '+976' },
+                { name: 'Morocco', code: '+212' }, { name: 'Myanmar', code: '+95' }, { name: 'Nepal', code: '+977' },
+                { name: 'Netherlands', code: '+31' }, { name: 'New Zealand', code: '+64' }, { name: 'Nicaragua', code: '+505' },
+                { name: 'Nigeria', code: '+234' }, { name: 'North Korea', code: '+850' }, { name: 'Norway', code: '+47' },
+                { name: 'Oman', code: '+968' }, { name: 'Pakistan', code: '+92' }, { name: 'Panama', code: '+507' },
+                { name: 'Paraguay', code: '+595' }, { name: 'Peru', code: '+51' }, { name: 'Philippines', code: '+63', length: 10 },
+                { name: 'Poland', code: '+48' }, { name: 'Portugal', code: '+351' }, { name: 'Qatar', code: '+974' },
+                { name: 'Romania', code: '+40' }, { name: 'Russia', code: '+7', length: 10 }, { name: 'Saudi Arabia', code: '+966' },
+                { name: 'Senegal', code: '+221' }, { name: 'Serbia', code: '+381' }, { name: 'Singapore', code: '+65', length: 8 },
+                { name: 'Slovakia', code: '+421' }, { name: 'Slovenia', code: '+386' }, { name: 'South Africa', code: '+27' },
+                { name: 'South Korea', code: '+82' }, { name: 'Spain', code: '+34' }, { name: 'Sri Lanka', code: '+94' },
+                { name: 'Sudan', code: '+249' }, { name: 'Sweden', code: '+46' }, { name: 'Switzerland', code: '+41' },
+                { name: 'Syria', code: '+963' }, { name: 'Taiwan', code: '+886' }, { name: 'Tanzania', code: '+255' },
+                { name: 'Thailand', code: '+66' }, { name: 'Turkey', code: '+90' }, { name: 'Uganda', code: '+256' },
+                { name: 'Ukraine', code: '+380' }, { name: 'United Arab Emirates', code: '+971' }, { name: 'Uruguay', code: '+598' },
+                { name: 'Venezuela', code: '+58' }, { name: 'Vietnam', code: '+84' }, { name: 'Yemen', code: '+967' },
+                { name: 'Zambia', code: '+260' }, { name: 'Zimbabwe', code: '+263' }
+            ];
+
+            const selectEl = document.getElementById(selectId);
+            if (!selectEl) return;
+
+            selectEl.innerHTML = countryCodes.map(c => `<option value="${c.code}" data-length="${c.length || ''}">${c.name} (${c.code})</option>`).join('');
+            // Set default to India
+            selectEl.value = '+91';
+            updatePhoneInputAttributes();
+        }
+
+        // --- Firestore Data Functions ---
+
+        /**
+         * Loads data for the dashboard view, including user's shipments and deliveries.
+         */
+        function loadDashboardData() {
+            if (!currentUser) return;
+            const myShipmentsList = document.getElementById('my-shipments-list');
+            const myDeliveriesList = document.getElementById('my-deliveries-list');
+
+            // Listen for shipments created by the current user
+            const myShipmentsQuery = query(collection(db, "shipments"), where("senderId", "==", currentUser.uid));
+            onSnapshot(myShipmentsQuery, (snapshot) => {
+                const shipments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderShipmentList(shipments, myShipmentsList, "You have no active shipments.");
+            }, (error) => console.error("Error fetching my shipments:", error));
+
+            // Listen for shipments the current user is carrying
+            const myDeliveriesQuery = query(collection(db, "shipments"), where("travelerId", "==", currentUser.uid));
+            onSnapshot(myDeliveriesQuery, (snapshot) => {
+                const deliveries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderShipmentList(deliveries, myDeliveriesList, "You are not carrying any shipments.");
+            }, (error) => console.error("Error fetching my deliveries:", error));
+
+            // Listen for conversations involving the current user
+            const conversationsViewList = document.getElementById('conversations-view-list');
+            // IMPORTANT: This query requires a composite index in Firestore.
+            // If conversations are not loading, check the browser's developer console for an error message.
+            // It will contain a link to create the required index in your Firebase console.
+            // Index: collection=chats, fields=(members array-contains, lastMessageTimestamp descending)
+            const chatsQuery = query(collection(db, "chats"), where("members", "array-contains", currentUser.uid), orderBy("lastMessageTimestamp", "desc"));
+
+            onSnapshot(chatsQuery, async (snapshot) => {
+                const chatPromises = snapshot.docs.map(async (doc) => {
+                    const chat = { id: doc.id, ...doc.data() };
+                    // If chat is missing origin, fetch it from the shipment to display
+                    if (!chat.origin || !chat.destination) {
+                        const shipmentRef = doc(db, "shipments", chat.shipmentId);
+                        try {
+                            const shipmentSnap = await getDoc(shipmentRef);
+                            if (shipmentSnap.exists()) {
+                                const shipmentData = shipmentSnap.data();
+                                chat.origin = shipmentData.origin;
+                                chat.destination = shipmentData.destination;
+                            }
+                        } catch (e) {
+                            console.error("Could not fetch shipment details for chat:", e);
+                        }
+                    }
+                    return chat;
+                });
+
+                const chats = await Promise.all(chatPromises);
+                renderConversations(chats, conversationsViewList);
+
+            }, (error) => {
+                console.error("Error fetching conversations:", error);
+                const conversationsViewList = document.getElementById('conversations-view-list');
+                // This is a specific error code for a missing Firestore index.
+                if (error.code === 'failed-precondition') {
+                    // The error message from Firestore contains a link to create the index.
+                    const urlMatch = error.message.match(/https?:\/\/[^\s]+/);
+                    if (urlMatch) {
+                        const indexCreationUrl = urlMatch[0];
+                        conversationsViewList.innerHTML = `
+                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md">
+                                <p class="font-bold">Database Configuration Required</p>
+                                <p class="text-sm mt-1">To see your conversations, a database index needs to be created. Please click the link below and then click "Create Index" in the new tab that opens.</p>
+                                <a href="${indexCreationUrl}" target="_blank" class="mt-2 inline-block bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300">
+                                    Create Database Index
+                                </a>
+                                <p class="text-xs mt-2">After creating the index, it may take a few minutes to build. Please refresh this page afterward.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    conversationsViewList.innerHTML = `<p class="text-red-500">Could not load conversations.</p>`;
+                }
+            });
+        }
+        
+        /**
+         * Loads available shipments, optionally filtering by origin and destination.
+         * @param {string} [origin=""] - The traveler's origin.
+         * @param {string} [destination=""] - The traveler's destination.
+         */
+        function loadAvailableShipments(origin = "", destination = "") {
+             const container = document.getElementById('available-shipments-container');
+             const searchCriteriaDisplay = document.getElementById('search-criteria-display');
+             
+             let q;
+             let queryConstraints = [where("status", "==", "available")];
+
+             if (origin && destination) {
+                searchCriteriaDisplay.innerHTML = `
+                    <h2 class="text-3xl font-bold">Available Shipments</h2>
+                    <p class="text-slate-500 mt-1">Showing results for: <span class="font-semibold">${origin}</span> to <span class="font-semibold">${destination}</span></p>
+                `;
+                queryConstraints.push(where("origin", "==", origin));
+                queryConstraints.push(where("destination", "==", destination));
+             } else {
+                 searchCriteriaDisplay.innerHTML = `<h2 class="text-3xl font-bold">All Available Shipments</h2>`;
+             }
+             
+             q = query(collection(db, "shipments"), ...queryConstraints);
+
+             onSnapshot(q, (snapshot) => {
+                const shipments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (shipments.length === 0) {
+                    container.innerHTML = `<p class="text-center text-slate-500 py-8">No matching shipments found. Try broadening your search!</p>`;
+                    return;
+                }
+                
+                container.innerHTML = shipments.map(shipment => `
+                     <div class="border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center bg-white hover:shadow-md transition-shadow" data-id="${shipment.id}">
+                        <div class="mb-3 md:mb-0">
+                             <p class="font-bold text-lg">${shipment.origin} <i class="fas fa-plane mx-2 text-slate-400"></i> ${shipment.destination}</p>
+                             <p class="text-sm text-slate-500">${shipment.itemDescription}</p>
+                        </div>
+                        <div class="flex items-center w-full md:w-auto">
+                            <span class="font-bold text-green-600 text-lg mr-4">$${shipment.deliveryFee}</span>
+                            <button class="view-details-btn w-full md:w-auto bg-slate-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-800" data-id="${shipment.id}">View Details</button>
+                        </div>
+                     </div>
+                `).join('');
+                
+                container.querySelectorAll('.view-details-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const shipment = shipments.find(s => s.id === e.currentTarget.dataset.id);
+                        if (shipment) showShipmentDetails(shipment);
+                    });
+                });
+
+             }, (error) => {
+                console.error("Error fetching available shipments:", error);
+                container.innerHTML = `<p class="text-center text-red-500 py-8">Could not load shipments. Please try again later.</p>`;
+             });
+        }
+        
+        /**
+         * Handles the creation of a new shipment request.
+         * @param {Event} e The form submission event.
+         */
+        async function handleCreateShipment(e) {
+            e.preventDefault();
+            if (!currentUser) {
+                alert("You must be signed in to create a shipment.");
+                return;
+            }
+            const form = e.target;
+            const shipmentData = {
+                senderId: currentUser.uid,
+                senderName: form['sender-name'].value,
+                senderEmail: form['sender-email'].value,
+                senderPhone: form['sender-country-code'].value + form['sender-phone'].value,
+                origin: form.origin.value,
+                destination: form.destination.value,
+                itemDescription: form['item-description'].value,
+                itemWeight: parseFloat(form['item-weight'].value),
+                deliveryFee: parseFloat(form['delivery-fee'].value),
+                status: 'available',
+                travelerId: null,
+                createdAt: serverTimestamp(),
+            };
+            
+            try {
+                // Find and delete all existing shipments by this user
+                const q = query(collection(db, "shipments"), where("senderId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+
+                const deletionPromises = [];
+                querySnapshot.forEach((doc) => {
+                    deletionPromises.push(deleteDoc(doc.ref));
+                });
+
+                await Promise.all(deletionPromises);
+                
+                // Add the new shipment
+                const newShipmentRef = await addDoc(collection(db, "shipments"), shipmentData);
+
+                 // Delete old chats associated with old shipments
+                const oldShipmentIds = querySnapshot.docs.map(doc => doc.id);
+                if(oldShipmentIds.length > 0){
+                    const chatsQuery = query(collection(db, "chats"), where("shipmentId", "in", oldShipmentIds));
+                    const chatsSnapshot = await getDocs(chatsQuery);
+                    const chatDeletionPromises = [];
+                    chatsSnapshot.forEach((doc) => {
+                        chatDeletionPromises.push(deleteDoc(doc.ref));
+                    });
+                    await Promise.all(chatDeletionPromises);
+                }
+
+                form.reset();
+                showView('dashboard-view');
+            } catch(error) {
+                console.error("Error creating new shipment: ", error);
+                alert("Failed to create shipment. Please try again.");
+            }
+        }
+        
+        /**
+         * Handles a traveler accepting a shipment.
+         * @param {string} shipmentId The ID of the shipment to accept.
+         */
+        async function handleAcceptShipment(shipmentId) {
+            if (!currentUser) {
+                alert("You must be signed in to accept a shipment.");
+                return;
+            }
+            const shipmentRef = doc(db, "shipments", shipmentId);
+            try {
+                await updateDoc(shipmentRef, {
+                    travelerId: currentUser.uid,
+                    status: 'matched'
+                });
+                
+                // Re-render the modal with updated info
+                const updatedShipmentSnap = await getDoc(shipmentRef);
+                if (updatedShipmentSnap.exists()) {
+                    const updatedShipment = { id: updatedShipmentSnap.id, ...updatedShipmentSnap.data() };
+                    showShipmentDetails(updatedShipment);
+                } else {
+                    detailsModal.classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error("Error accepting shipment: ", error);
+                alert("Could not accept the shipment. It may have already been taken.");
+            }
+        }
+
+        /**
+         * Handles a traveler unmatching from a shipment.
+         * @param {string} shipmentId The ID of the shipment to unmatch.
+         */
+        async function handleUnmatchShipment(shipmentId) {
+            if (!currentUser) {
+                alert("You must be signed in to unmatch a shipment.");
+                return;
+            }
+            const shipmentRef = doc(db, "shipments", shipmentId);
+            try {
+                await updateDoc(shipmentRef, {
+                    travelerId: null,
+                    status: 'available'
+                });
+
+                // Re-render the modal with updated info
+                const updatedShipmentSnap = await getDoc(shipmentRef);
+                if (updatedShipmentSnap.exists()) {
+                    const updatedShipment = { id: updatedShipmentSnap.id, ...updatedShipmentSnap.data() };
+                    showShipmentDetails(updatedShipment);
+                } else {
+                    detailsModal.classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error("Error unmatching shipment: ", error);
+                alert("Could not unmatch the shipment. Please try again.");
+            }
+        }
+
+        // --- Authentication Functions ---
+        function signInWithGoogle() {
+            const provider = new GoogleAuthProvider();
+            _signInWithPopup(provider);
+        }
+
+        async function _signInWithPopup(provider) {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Popup Sign-in Error:", error);
+                document.getElementById('auth-error').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function handleEmailSignUp() {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const errorEl = document.getElementById('auth-error');
+            errorEl.textContent = '';
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error("Email Sign-up Error:", error);
+                errorEl.textContent = error.message;
+            }
+        }
+
+        async function handleEmailSignIn() {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const errorEl = document.getElementById('auth-error');
+            errorEl.textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error("Email Sign-in Error:", error);
+                errorEl.textContent = error.message;
+            }
+        }
+
+        // --- Chat Functions ---
+
+        /**
+         * Creates a chat if it doesn't exist and navigates to the chat view.
+         * @param {string} recipientId The user ID of the person to chat with.
+         * @param {string} shipmentId The ID of the shipment being discussed.
+         */
+        async function handleInitiateChat(recipientId, shipmentId) {
+            if (!currentUser) return;
+            detailsModal.classList.add('hidden');
+
+            const members = [currentUser.uid, recipientId].sort();
+            currentChatId = `${members[0]}_${members[1]}_${shipmentId}`;
+
+            const chatRef = doc(db, "chats", currentChatId);
+            const shipmentRef = doc(db, "shipments", shipmentId);
+
+            try {
+                const [chatSnap, shipmentSnap] = await Promise.all([getDoc(chatRef), getDoc(shipmentRef)]);
+                
+                const shipmentData = shipmentSnap.exists() ? shipmentSnap.data() : { 
+                    origin: 'Unknown', 
+                    destination: 'Unknown', 
+                    senderName: 'N/A', 
+                    senderEmail: 'N/A', 
+                    senderPhone: 'N/A' 
+                };
+
+                if (!chatSnap.exists()) {
+                    await setDoc(chatRef, {
+                        members: members,
+                        shipmentId: shipmentId,
+                        origin: shipmentData.origin,
+                        destination: shipmentData.destination,
+                        createdAt: serverTimestamp(),
+                        lastMessageTimestamp: serverTimestamp()
+                    });
+                } else {
+                    const chatData = chatSnap.data();
+                    const updates = {};
+
+                    if (!chatData.origin || !chatData.destination) {
+                        updates.origin = shipmentData.origin;
+                        updates.destination = shipmentData.destination;
+                    }
+
+                    if (chatData.lastMessage && (!chatData.lastMessageReadBy || !chatData.lastMessageReadBy.includes(currentUser.uid))) {
+                        updates.lastMessageReadBy = [...(chatData.lastMessageReadBy || []), currentUser.uid];
+                    }
+
+                    if (Object.keys(updates).length > 0) {
+                         await updateDoc(chatRef, updates);
+                    }
+                }
+                
+                loadAndDisplayChat(recipientId, shipmentData);
+                showView('chat-view');
+
+            } catch (error) {
+                console.error("Error initiating chat:", error);
+                alert("Could not open the chat. The shipment may no longer exist.");
+            }
+        }
+
+        /**
+         * Loads and displays messages for the current chat, and sets up the send message form.
+         * @param {string} recipientId The user ID of the other person in the chat.
+         * @param {object} shipmentData The data for the related shipment.
+         */
+        function loadAndDisplayChat(recipientId, shipmentData) {
+            const chatHeader = document.getElementById('chat-header');
+            const messagesContainer = document.getElementById('messages-container');
+            const messageForm = document.getElementById('message-form');
+
+            chatHeader.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="font-bold text-xl">Chat about shipment</h2>
+                        <p class="text-sm text-slate-500">with User: <span class="font-mono">${recipientId}</span></p>
+                    </div>
+                    <details class="relative">
+                        <summary class="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-800 list-none">
+                            <i class="fas fa-info-circle mr-1"></i> Contact Info
+                        </summary>
+                        <div class="absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-xl p-3 space-y-2 z-10 text-sm">
+                            <p><strong>Name:</strong> ${shipmentData.senderName}</p>
+                            <p><strong>Email:</strong> ${shipmentData.senderEmail}</p>
+                            <p><strong>Phone:</strong> ${shipmentData.senderPhone}</p>
+                        </div>
+                    </details>
+                </div>
+            `;
+
+            const messagesRef = collection(db, "chats", currentChatId, "messages");
+            const q = query(messagesRef, orderBy("timestamp"));
+
+            if (unsubscribeMessages) unsubscribeMessages();
+
+            unsubscribeMessages = onSnapshot(q, (snapshot) => {
+                messagesContainer.innerHTML = '<p class="text-center text-slate-400 text-xs">This is the start of your conversation.</p>';
+                snapshot.forEach(doc => {
+                    const message = doc.data();
+                    const isMe = message.senderId === currentUser.uid;
+                    const messageEl = document.createElement('div');
+                    messageEl.classList.add('flex', 'items-end', isMe ? 'justify-end' : 'justify-start');
+                    messageEl.innerHTML = `
+                        <div class="max-w-xs md:max-w-md p-3 rounded-lg ${isMe ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-800'}">
+                            <p>${message.text}</p>
+                        </div>
+                    `;
+                    messagesContainer.appendChild(messageEl);
+                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+
+            const newMessageForm = messageForm.cloneNode(true);
+            messageForm.parentNode.replaceChild(newMessageForm, messageForm);
+            
+            newMessageForm.addEventListener('submit', (e) => handleSendMessage(e, currentChatId));
+        }
+
+        /**
+         * Handles sending a new message to the current chat.
+         * @param {Event} e The form submission event.
+         * @param {string} chatId The ID of the current chat.
+         */
+        async function handleSendMessage(e, chatId) {
+            e.preventDefault();
+            const messageInput = document.getElementById('message-input');
+            const text = messageInput.value.trim();
+
+            if (text && chatId && currentUser) {
+                messageInput.value = '';
+                const messagesRef = collection(db, "chats", chatId, "messages");
+                await addDoc(messagesRef, {
+                    text: text,
+                    senderId: currentUser.uid,
+                    timestamp: serverTimestamp()
+                });
+
+                const chatRef = doc(db, "chats", chatId);
+                await updateDoc(chatRef, {
+                    lastMessage: text,
+                    lastMessageTimestamp: serverTimestamp(),
+                    lastMessageReadBy: [currentUser.uid] // Mark as read only by the sender
+                }).catch(err => console.log("Chat doc may not exist yet, that's okay."));
+            }
+        }
+        
+        // --- App Entry Point ---
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
