@@ -274,7 +274,7 @@
             </div>
 
             <!-- About Us View -->
-          <div id="terms-and-conditions-view" class="view">
+            <div id="terms-and-conditions-view" class="view">
                 <div class="max-w-4xl mx-auto">
                      <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
                     <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl">
@@ -722,44 +722,38 @@
                 // Logged-in user view
                 linksHtml = `
                     <div class="flex items-center space-x-2">
-                        <a href="#" id="nav-dashboard" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Dashboard</a>
-                        <a href="#" id="nav-conversations" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Conversations</a>
-                        <a href="#" id="nav-guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
-                        <a href="#" id="nav-terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms and Conditions</a>
-                        <a href="#" id="nav-contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
-                        <button id="signout-btn" class="ml-4 bg-slate-100 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-200">Sign Out</button>
+                        <a href="#" data-nav="dashboard" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Dashboard</a>
+                        <a href="#" data-nav="conversations" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Conversations</a>
+                        <a href="#" data-nav="guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
+                        <a href="#" data-nav="terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms And Conditions</a>
+                        <a href="#" data-nav="contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
+                        <button data-nav="signout" class="ml-4 bg-slate-100 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-200">Sign Out</button>
                     </div>`;
             } else {
                  // Logged-out user view
                  linksHtml = `
                     <div class="flex items-center space-x-2">
-                        <a href="#" id="nav-guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
-                        <a href="#" id="nav-terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms and Conditions</a>
-                        <a href="#" id="nav-contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
-                        <button id="signin-link" class="ml-4 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
+                        <a href="#" data-nav="guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
+                        <a href="#" data-nav="terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms And Conditions</a>
+                        <a href="#" data-nav="contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
+                        <button data-nav="signin" class="ml-4 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
                     </div>`;
             }
             
             navLinks.innerHTML = linksHtml;
             mobileMenu.innerHTML = `<div class="p-4 flex flex-col space-y-2">${linksHtml.replace(/<div class="flex items-center space-x-2">/g, '').replace(/<\/div>/g, '')}</div>`; // Make mobile links vertical
             
-            // Always add listeners for info pages
-            document.getElementById('nav-terms-and-conditions').addEventListener('click', (e) => { e.preventDefault(); showView('terms-and-conditions-view'); });
-            document.getElementById('nav-guidelines').addEventListener('click', (e) => { e.preventDefault(); showView('guidelines-view'); });
-            document.getElementById('nav-contact-us').addEventListener('click', (e) => { e.preventDefault(); showView('contact-us-view'); });
+            // Attach listeners using querySelectorAll to handle both desktop and mobile
+            document.querySelectorAll('[data-nav="terms-and-conditions"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('terms-and-conditions-view'); }));
+            document.querySelectorAll('[data-nav="guidelines"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('guidelines-view'); }));
+            document.querySelectorAll('[data-nav="contact-us"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('contact-us-view'); }));
 
             if (currentUser) {
-                document.getElementById('signout-btn').addEventListener('click', () => auth.signOut());
-                document.getElementById('nav-dashboard').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showView('dashboard-view');
-                });
-                document.getElementById('nav-conversations').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showView('conversations-view');
-                });
+                document.querySelectorAll('[data-nav="signout"]').forEach(el => el.addEventListener('click', () => auth.signOut()));
+                document.querySelectorAll('[data-nav="dashboard"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('dashboard-view'); }));
+                document.querySelectorAll('[data-nav="conversations"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('conversations-view'); }));
             } else {
-                 document.getElementById('signin-link').addEventListener('click', () => showView('auth-view'));
+                 document.querySelectorAll('[data-nav="signin"]').forEach(el => el.addEventListener('click', () => showView('auth-view')));
             }
         }
         
