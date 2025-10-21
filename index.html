@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LuggageLink: Peer-to-Peer Shipping</title>
+    <title>Lugfer: Earn money while traveling</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -71,7 +71,7 @@
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center">
                         <a href="#" id="logo-link" class="font-bold text-2xl text-slate-800">
-                            <i class="fas fa-suitcase-rolling mr-2 text-blue-600"></i>LuggageLink
+                            <i class="fas fa-suitcase-rolling mr-2 text-blue-600"></i>Lugfer
                         </a>
                     </div>
                     <div id="nav-links" class="hidden md:block">
@@ -96,7 +96,7 @@
             <div id="auth-view" class="view">
                 <div class="max-w-lg mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg text-center mt-8 sm:mt-12">
                     <i class="fas fa-shield-alt text-4xl sm:text-5xl text-blue-500 mb-4"></i>
-                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Welcome to LuggageLink</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Welcome to Lugfer</h2>
                     <p class="text-slate-500 mb-6">Connect with travelers to ship your items faster and cheaper. Please sign in to continue.</p>
                     <div id="auth-container" class="space-y-4">
                         <!-- Auth UI will be rendered here -->
@@ -370,7 +370,7 @@
                      <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
                     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg prose">
                         <h2>Community Guidelines</h2>
-                        <p>To ensure a safe, secure, and positive experience for everyone on LuggageLink, we ask all members of our community to adhere to the following guidelines.</p>
+                        <p>To ensure a safe, secure, and positive experience for everyone on Lugfer, we ask all members of our community to adhere to the following guidelines.</p>
                         <h3>For Senders</h3>
                         <ul>
                             <li><strong>Be Honest and Accurate:</strong> Clearly and accurately describe the item you are sending, including its contents, size, and weight. Misrepresenting an item can lead to complications and is a violation of our policy.</li>
@@ -386,7 +386,7 @@
                             <li><strong>Handle with Care:</strong> Treat the sender's items with the same care you would treat your own belongings.</li>
                         </ul>
                          <h3>General Policy</h3>
-                         <p>LuggageLink is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
+                         <p>Lugfer is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
                     </div>
                 </div>
             </div>
@@ -410,7 +410,7 @@
                  <div class="max-w-4xl mx-auto">
                     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg prose">
                        <div class="flex justify-between items-start">
-                             <h2>Welcome to LuggageLink!</h2>
+                             <h2>Welcome to Lugfer!</h2>
                              <div class="text-right text-sm">
                                 <p class="text-slate-500">Your User ID:</p>
                                 <p id="user-id-display-guidelines" class="font-mono bg-slate-100 px-2 py-1 rounded"></p>
@@ -433,7 +433,7 @@
                                 <li><strong>Handle with Care:</strong> Treat the sender's items with the same care you would treat your own belongings.</li>
                             </ul>
                             <h3>General Policy</h3>
-                            <p>LuggageLink is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
+                            <p>Lugfer is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
                         </div>
                         <div class="flex items-center mt-6">
                             <input id="accept-guidelines-checkbox" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -721,40 +721,42 @@
             if (currentUser) {
                 // Logged-in user view
                 linksHtml = `
-                    <div class="flex items-center space-x-2">
-                        <a href="#" data-nav="dashboard" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Dashboard</a>
-                        <a href="#" data-nav="conversations" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Conversations</a>
-                        <a href="#" data-nav="guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
-                        <a href="#" data-nav="terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms And Conditions</a>
-                        <a href="#" data-nav="contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
-                        <button data-nav="signout" class="ml-4 bg-slate-100 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-200">Sign Out</button>
-                    </div>`;
+                    <a href="#" data-nav="dashboard" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Dashboard</a>
+                    <a href="#" data-nav="conversations" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Conversations</a>
+                    <a href="#" data-nav="guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
+                    <a href="#" data-nav="terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms and Conditions</a>
+                    <a href="#" data-nav="contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
+                    <button data-nav="signout" class="ml-4 bg-slate-100 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-200">Sign Out</button>
+                    `;
             } else {
                  // Logged-out user view
                  linksHtml = `
-                    <div class="flex items-center space-x-2">
-                        <a href="#" data-nav="guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
-                        <a href="#" data-nav="terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms And Conditions</a>
-                        <a href="#" data-nav="contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
-                        <button data-nav="signin" class="ml-4 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
-                    </div>`;
+                    <a href="#" data-nav="guidelines" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Guidelines</a>
+                    <a href="#" data-nav="terms-and-conditions" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Terms and Conditions</a>
+                    <a href="#" data-nav="contact-us" class="text-slate-500 hover:text-blue-600 font-medium px-3 py-2 rounded-md">Contact</a>
+                    <button data-nav="signin" class="ml-4 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
+                    `;
             }
             
-            navLinks.innerHTML = linksHtml;
-            mobileMenu.innerHTML = `<div class="p-4 flex flex-col space-y-2">${linksHtml.replace(/<div class="flex items-center space-x-2">/g, '').replace(/<\/div>/g, '')}</div>`; // Make mobile links vertical
+            navLinks.innerHTML = `<div class="flex items-center space-x-2">${linksHtml}</div>`;
+            mobileMenu.innerHTML = `<div class="p-4 flex flex-col space-y-2">${linksHtml}</div>`; // Make mobile links vertical
             
             // Attach listeners using querySelectorAll to handle both desktop and mobile
-            document.querySelectorAll('[data-nav="terms-and-conditions"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('terms-and-conditions-view'); }));
-            document.querySelectorAll('[data-nav="guidelines"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('guidelines-view'); }));
-            document.querySelectorAll('[data-nav="contact-us"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('contact-us-view'); }));
-
-            if (currentUser) {
-                document.querySelectorAll('[data-nav="signout"]').forEach(el => el.addEventListener('click', () => auth.signOut()));
-                document.querySelectorAll('[data-nav="dashboard"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('dashboard-view'); }));
-                document.querySelectorAll('[data-nav="conversations"]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); showView('conversations-view'); }));
-            } else {
-                 document.querySelectorAll('[data-nav="signin"]').forEach(el => el.addEventListener('click', () => showView('auth-view')));
-            }
+            document.querySelectorAll('[data-nav]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const navAction = el.dataset.nav;
+                    switch(navAction) {
+                        case 'dashboard': showView('dashboard-view'); break;
+                        case 'conversations': showView('conversations-view'); break;
+                        case 'guidelines': showView('guidelines-view'); break;
+                        case 'terms-and-conditions': showView('terms-and-conditions-view'); break;
+                        case 'contact-us': showView('contact-us-view'); break;
+                        case 'signin': showView('auth-view'); break;
+                        case 'signout': auth.signOut(); break;
+                    }
+                });
+            });
         }
         
         /**
