@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lugfer: Peer-to-Peer Shipping</title>
+    <title>LuggageLink: Peer-to-Peer Shipping</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -71,7 +71,7 @@
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center">
                         <a href="#" id="logo-link" class="font-bold text-2xl text-slate-800">
-                            <i class="fas fa-suitcase-rolling mr-2 text-blue-600"></i>Lugfer
+                            <i class="fas fa-suitcase-rolling mr-2 text-blue-600"></i>LuggageLink
                         </a>
                     </div>
                     <div id="nav-links" class="hidden md:block">
@@ -84,7 +84,7 @@
                     </div>
                 </div>
             </nav>
-            <div id="mobile-menu" class="md:hidden hidden">
+            <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
                  <!-- Mobile links will be dynamically inserted here -->
             </div>
         </header>
@@ -94,9 +94,9 @@
 
             <!-- Authentication View -->
             <div id="auth-view" class="view">
-                <div class="max-w-lg mx-auto bg-white p-8 rounded-xl shadow-lg text-center mt-12">
-                    <i class="fas fa-shield-alt text-5xl text-blue-500 mb-4"></i>
-                    <h2 class="text-3xl font-bold mb-2">Welcome to Lugfer</h2>
+                <div class="max-w-lg mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg text-center mt-8 sm:mt-12">
+                    <i class="fas fa-shield-alt text-4xl sm:text-5xl text-blue-500 mb-4"></i>
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2">Welcome to LuggageLink</h2>
                     <p class="text-slate-500 mb-6">Connect with travelers to ship your items faster and cheaper. Please sign in to continue.</p>
                     <div id="auth-container" class="space-y-4">
                         <!-- Auth UI will be rendered here -->
@@ -106,17 +106,17 @@
 
             <!-- Dashboard View -->
             <div id="dashboard-view" class="view">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold">Dashboard</h1>
-                     <div class="text-right">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+                    <h1 class="text-2xl sm:text-3xl font-bold">Dashboard</h1>
+                     <div class="text-left sm:text-right">
                         <p class="text-sm text-slate-500">Your User ID:</p>
-                        <p id="user-id-display-dashboard" class="font-mono text-sm bg-slate-100 px-2 py-1 rounded"></p>
+                        <p id="user-id-display-dashboard" class="font-mono text-xs sm:text-sm bg-slate-100 px-2 py-1 rounded"></p>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Sender Panel -->
                     <div class="bg-white p-6 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-4">For Senders</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold mb-4">For Senders</h2>
                         <p class="text-slate-500 mb-6">Have something to send? Post a request and find a traveler heading to your destination.</p>
                         <button id="show-create-shipment-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
                             <i class="fas fa-plus-circle mr-2"></i>Create New Shipment
@@ -131,7 +131,7 @@
                     </div>
                     <!-- Traveler Panel -->
                     <div class="bg-white p-6 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold mb-4">For Travelers</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold mb-4">For Travelers</h2>
                         <p class="text-slate-500 mb-4">Enter your travel route to find shipments you can carry.</p>
                         <div class="space-y-4 mb-4">
                             <div>
@@ -162,10 +162,10 @@
             <div id="create-shipment-view" class="view">
                 <div class="max-w-2xl mx-auto">
                     <button class="back-to-dashboard text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
-                    <div class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-3xl font-bold mb-6">Create a Shipment Request</h2>
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-6">Create a Shipment Request</h2>
                         <form id="create-shipment-form">
-                            <h3 class="text-xl font-bold mb-4 border-b pb-2">Shipment Info</h3>
+                            <h3 class="text-lg sm:text-xl font-bold mb-4 border-b pb-2">Shipment Info</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                                 <div class="relative">
                                     <label class="block font-medium text-slate-700 mb-1" for="origin">Origin</label>
@@ -191,7 +191,7 @@
                                 </div>
                             </div>
 
-                            <h3 class="text-xl font-bold mt-6 mb-4 border-b pb-2">Your Contact Info</h3>
+                            <h3 class="text-lg sm:text-xl font-bold mt-6 mb-4 border-b pb-2">Your Contact Info</h3>
                             <p class="text-sm text-slate-500 mb-4">This will only be shared with the traveler after they accept your shipment.</p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
@@ -227,9 +227,9 @@
             <div id="find-shipment-view" class="view">
                  <div class="max-w-4xl mx-auto">
                     <button class="back-to-dashboard text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
-                    <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
                         <div id="search-criteria-display" class="mb-6">
-                            <h2 class="text-3xl font-bold">Available Shipments</h2>
+                            <h2 class="text-2xl sm:text-3xl font-bold">Available Shipments</h2>
                         </div>
                         <div id="available-shipments-container" class="space-y-4">
                            <!-- Available shipments will be dynamically loaded here -->
@@ -243,8 +243,8 @@
             <div id="conversations-view" class="view">
                  <div class="max-w-4xl mx-auto">
                     <button class="back-to-dashboard text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Dashboard</button>
-                    <div class="bg-white p-8 rounded-xl shadow-lg">
-                        <h2 class="text-3xl font-bold mb-6">My Conversations</h2>
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-6">My Conversations</h2>
                         <div id="conversations-view-list" class="space-y-4">
                            <p class="text-center text-slate-500 py-8">Loading conversations...</p>
                         </div>
@@ -273,8 +273,8 @@
                 </div>
             </div>
 
-          <!-- About Us View -->
-            <div id="terms-and-conditions-view" class="view">
+            <!-- About Us View -->
+          <div id="terms-and-conditions-view" class="view">
                 <div class="max-w-4xl mx-auto">
                      <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
                     <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl">
@@ -368,9 +368,9 @@
             <div id="guidelines-view" class="view">
                  <div class="max-w-4xl mx-auto">
                      <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
-                    <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl">
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg prose">
                         <h2>Community Guidelines</h2>
-                        <p>To ensure a safe, secure, and positive experience for everyone on Lugfer, we ask all members of our community to adhere to the following guidelines.</p>
+                        <p>To ensure a safe, secure, and positive experience for everyone on LuggageLink, we ask all members of our community to adhere to the following guidelines.</p>
                         <h3>For Senders</h3>
                         <ul>
                             <li><strong>Be Honest and Accurate:</strong> Clearly and accurately describe the item you are sending, including its contents, size, and weight. Misrepresenting an item can lead to complications and is a violation of our policy.</li>
@@ -386,7 +386,7 @@
                             <li><strong>Handle with Care:</strong> Treat the sender's items with the same care you would treat your own belongings.</li>
                         </ul>
                          <h3>General Policy</h3>
-                         <p>Lugfer is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
+                         <p>LuggageLink is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
                     </div>
                 </div>
             </div>
@@ -395,13 +395,12 @@
              <div id="contact-us-view" class="view">
                 <div class="max-w-4xl mx-auto">
                      <button class="back-to-dashboard-info text-slate-500 hover:text-slate-800 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back</button>
-                    <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl text-center">
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg prose text-center">
                         <h2>Contact Us</h2>
                         <p>Have questions, feedback, or need support? We'd love to hear from you!</p>
                         <p>For all inquiries, please reach out to our support team at:</p>
                         <a href="mailto:support@luggagelink.com" class="text-blue-600 font-bold text-xl hover:underline">support@luggagelink.com</a>
                         <p class="mt-4 text-sm text-slate-500">We do our best to respond to all inquiries within 24-48 hours.</p>
-                        <p>This website is run by AR Developer.</p>
                     </div>
                 </div>
             </div>
@@ -409,8 +408,14 @@
             <!-- Guidelines Acceptance View -->
             <div id="guidelines-acceptance-view" class="view">
                  <div class="max-w-4xl mx-auto">
-                    <div class="bg-white p-8 rounded-xl shadow-lg prose lg:prose-xl">
-                        <h2>Welcome to Lugfer!</h2>
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg prose">
+                       <div class="flex justify-between items-start">
+                             <h2>Welcome to LuggageLink!</h2>
+                             <div class="text-right text-sm">
+                                <p class="text-slate-500">Your User ID:</p>
+                                <p id="user-id-display-guidelines" class="font-mono bg-slate-100 px-2 py-1 rounded"></p>
+                            </div>
+                        </div>
                         <p>Before you get started, please take a moment to read and agree to our Community Guidelines. This helps us maintain a safe and trustworthy environment for all users.</p>
                         <div class="h-96 overflow-y-auto border p-4 rounded-lg my-4 bg-slate-50">
                             <h3>For Senders</h3>
@@ -428,7 +433,7 @@
                                 <li><strong>Handle with Care:</strong> Treat the sender's items with the same care you would treat your own belongings.</li>
                             </ul>
                             <h3>General Policy</h3>
-                            <p>Lugfer is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
+                            <p>LuggageLink is a platform that connects users. We do not inspect items, handle shipping, or take responsibility for the contents of any package. All transactions are based on the trust and agreement between the sender and the traveler. Any violation of these guidelines may result in a permanent ban from the platform.</p>
                         </div>
                         <div class="flex items-center mt-6">
                             <input id="accept-guidelines-checkbox" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -536,6 +541,8 @@
                         updateNav();
                         loadDashboardData();
                     } else {
+                        const userIdDisplayGuidelines = document.getElementById('user-id-display-guidelines');
+                        if(userIdDisplayGuidelines) userIdDisplayGuidelines.textContent = currentUser.uid;
                         showView('guidelines-acceptance-view');
                         updateNav();
                     }
@@ -734,7 +741,7 @@
             }
             
             navLinks.innerHTML = linksHtml;
-            mobileMenu.innerHTML = `<div class="p-4 flex flex-col space-y-2">${linksHtml.replace(/class="flex items-center space-x-2"/g, '')}</div>`; // Make mobile links vertical
+            mobileMenu.innerHTML = `<div class="p-4 flex flex-col space-y-2">${linksHtml.replace(/<div class="flex items-center space-x-2">/g, '').replace(/<\/div>/g, '')}</div>`; // Make mobile links vertical
             
             // Always add listeners for info pages
             document.getElementById('nav-terms-and-conditions').addEventListener('click', (e) => { e.preventDefault(); showView('terms-and-conditions-view'); });
